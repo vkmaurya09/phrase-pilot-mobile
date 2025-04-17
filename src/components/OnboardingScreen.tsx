@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { LLMProvider, LLMConfig, defaultConfig } from '@/models/ConfigModel';
 import { storageService } from '@/services/StorageService';
 import { LLMServiceFactory } from '@/services/LLMService';
-import { ArrowRight, Lock, Server, Key, Cpu } from 'lucide-react';
+import { ArrowRight, Lock, Server, Key, Cpu, Sparkles } from 'lucide-react';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -38,6 +38,9 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         break;
       case LLMProvider.Local:
         apiUrl = 'http://localhost:11434/api';
+        break;
+      case LLMProvider.Gemini:
+        apiUrl = 'https://generativelanguage.googleapis.com';
         break;
     }
     
@@ -167,6 +170,12 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
                         <div className="flex items-center">
                           <Cpu className="mr-2 h-4 w-4" />
                           <span>Local LLM</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={LLMProvider.Gemini}>
+                        <div className="flex items-center">
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          <span>Gemini</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
