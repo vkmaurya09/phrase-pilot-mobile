@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,27 +23,33 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const handleProviderChange = (value: string) => {
     const provider = value as LLMProvider;
     let apiUrl = config.apiUrl;
+    let modelName = config.modelName;
     
     // Set default API URLs based on provider
     switch (provider) {
       case LLMProvider.OpenAI:
         apiUrl = 'https://api.openai.com/v1';
+        modelName = 'gpt-4o-mini';
         break;
       case LLMProvider.HuggingFace:
         apiUrl = 'https://api-inference.huggingface.co/models';
+        modelName = 'meta-llama/Meta-Llama-3-8B';
         break;
       case LLMProvider.Azure:
         apiUrl = 'https://your-resource-name.openai.azure.com';
+        modelName = 'gpt-4';
         break;
       case LLMProvider.Local:
         apiUrl = 'http://localhost:11434/api';
+        modelName = 'llama3';
         break;
       case LLMProvider.Gemini:
         apiUrl = 'https://generativelanguage.googleapis.com';
+        modelName = 'gemini-pro';
         break;
     }
     
-    setConfig({ ...config, provider: provider as LLMProvider, apiUrl });
+    setConfig({ ...config, provider: provider as LLMProvider, apiUrl, modelName });
   };
   
   const validateStep = (): boolean => {

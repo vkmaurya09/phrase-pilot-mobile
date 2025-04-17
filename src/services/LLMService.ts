@@ -300,8 +300,8 @@ export class GeminiService implements LLMService {
   
   async listModels(): Promise<string[]> {
     return [
-      "gemini-1.5-pro-latest",
-      "gemini-1.5-flash-latest",
+      "gemini-1.5-pro",
+      "gemini-1.0-pro",
       "gemini-pro",
       "gemini-pro-vision",
     ];
@@ -309,8 +309,8 @@ export class GeminiService implements LLMService {
   
   async rephrase(text: string, options?: Record<string, unknown>): Promise<LLMResponse> {
     try {
-      // Similar to Python's genai.GenerativeModel().generate_content()
-      const response = await fetch(`${this.config.apiUrl}/v1/models/${this.config.modelName}:generateContent`, {
+      // Using the correct endpoint structure for Gemini API
+      const response = await fetch(`${this.config.apiUrl}/v1beta/models/${this.config.modelName}:generateContent`, {
         method: 'POST',
         headers: {
           'x-goog-api-key': this.config.apiKey,
@@ -328,10 +328,6 @@ export class GeminiService implements LLMService {
             topK: 40,
             topP: 0.8,
           },
-          safetySettings: [{
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_NONE"
-          }]
         }),
       });
       
