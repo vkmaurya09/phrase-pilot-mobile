@@ -300,6 +300,8 @@ export class GeminiService implements LLMService {
   
   async listModels(): Promise<string[]> {
     return [
+      "gemini-1.5-pro-latest",
+      "gemini-1.5-flash-latest",
       "gemini-pro",
       "gemini-pro-vision",
     ];
@@ -307,27 +309,29 @@ export class GeminiService implements LLMService {
   
   async rephrase(text: string, options?: Record<string, unknown>): Promise<LLMResponse> {
     try {
-      const response = await fetch(`${this.config.apiUrl}/v1/models/gemini-pro:generateContent`, {
+      // Similar to Python's genai.GenerativeModel().generate_content()
+      const response = await fetch(`${this.config.apiUrl}/v1/models/${this.config.modelName}:generateContent`, {
         method: 'POST',
         headers: {
           'x-goog-api-key': this.config.apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: `You are a rephrase assistant. Rephrase the following text while preserving its meaning and tone. Return only valid JSON in the format {"rephrased":"..."}:\n\n${text}`
-                }
-              ]
-            }
-          ],
+          contents: [{
+            parts: [{
+              text: `You are a rephrase assistant. Rephrase the following text while preserving its meaning and tone. Return only valid JSON in the format {"rephrased":"..."}:\n\n${text}`
+            }]
+          }],
           generationConfig: {
             temperature: options?.temperature ?? 0.5,
             maxOutputTokens: 1024,
+            topK: 40,
+            topP: 0.8,
           },
+          safetySettings: [{
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_NONE"
+          }]
         }),
       });
       
@@ -336,6 +340,7 @@ export class GeminiService implements LLMService {
       }
       
       const data = await response.json();
+      // Match Python's response.text structure
       const content = data.candidates[0].content.parts[0].text;
       
       try {
