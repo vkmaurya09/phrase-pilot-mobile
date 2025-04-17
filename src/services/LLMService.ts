@@ -1,4 +1,3 @@
-
 import { LLMConfig, LLMProvider, LLMResponse } from '../models/ConfigModel';
 
 export interface LLMService {
@@ -292,6 +291,73 @@ export class LocalLLMService implements LLMService {
   }
 }
 
+export class GeminiService implements LLMService {
+  private config: LLMConfig;
+  
+  constructor(config: LLMConfig) {
+    this.config = config;
+  }
+  
+  async listModels(): Promise<string[]> {
+    return [
+      "gemini-pro",
+      "gemini-pro-vision",
+    ];
+  }
+  
+  async rephrase(text: string, options?: Record<string, unknown>): Promise<LLMResponse> {
+    try {
+      const response = await fetch(`${this.config.apiUrl}/v1/models/gemini-pro:generateContent`, {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': this.config.apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `You are a rephrase assistant. Rephrase the following text while preserving its meaning and tone. Return only valid JSON in the format {"rephrased":"..."}:\n\n${text}`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: options?.temperature ?? 0.5,
+            maxOutputTokens: 1024,
+          },
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const content = data.candidates[0].content.parts[0].text;
+      
+      try {
+        // Try to extract JSON from the response
+        const jsonMatch = content.match(/\{.*\}/s);
+        if (jsonMatch) {
+          const parsedContent = JSON.parse(jsonMatch[0]);
+          return { rephrased: parsedContent.rephrased };
+        }
+        // If no JSON found, return the raw text
+        return { rephrased: content };
+      } catch (e) {
+        return { rephrased: content };
+      }
+    } catch (error: any) {
+      console.error('Error rephrasing text:', error);
+      return { rephrased: '', error: error.message };
+    }
+  }
+}
+
+// Update the factory to include Gemini
 export class LLMServiceFactory {
   static createService(config: LLMConfig): LLMService {
     switch (config.provider) {
@@ -303,6 +369,8 @@ export class LLMServiceFactory {
         return new AzureService(config);
       case LLMProvider.Local:
         return new LocalLLMService(config);
+      case LLMProvider.Gemini:
+        return new GeminiService(config);
       default:
         return new OpenAIService(config);
     }

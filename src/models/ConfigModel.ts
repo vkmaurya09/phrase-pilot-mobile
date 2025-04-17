@@ -1,4 +1,3 @@
-
 export interface LLMConfig {
   provider: LLMProvider;
   apiUrl: string;
@@ -11,7 +10,8 @@ export enum LLMProvider {
   OpenAI = "OpenAI",
   HuggingFace = "Hugging Face",
   Azure = "Azure",
-  Local = "Local"
+  Local = "Local",
+  Gemini = "Gemini"
 }
 
 export const defaultConfig: LLMConfig = {
