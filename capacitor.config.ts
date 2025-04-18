@@ -1,8 +1,7 @@
-
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.2c331c8f3998440889178389d82cde0a',
+  appId: 'com.phrasepilot.app',
   appName: 'phrase-pilot-mobile',
   webDir: 'dist',
   server: {

@@ -1,16 +1,16 @@
-
 import React, { useState } from 'react';
 import { LLMConfig } from '@/models/ConfigModel';
 import { LLMServiceFactory } from '@/services/LLMService';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Keyboard, ArrowRight, RotateCcw } from 'lucide-react';
+import { Keyboard, ArrowRight, RotateCcw, MessageSquareText } from 'lucide-react';
 
 interface IOSKeyboardProps {
   config: LLMConfig;
+  enabled: boolean;
 }
 
-const IOSKeyboard: React.FC<IOSKeyboardProps> = ({ config }) => {
+const IOSKeyboard: React.FC<IOSKeyboardProps> = ({ config, enabled }) => {
   const [text, setText] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -101,25 +101,27 @@ const IOSKeyboard: React.FC<IOSKeyboardProps> = ({ config }) => {
           >
             Hide
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRephrase}
-            disabled={isLoading}
-            className="bg-phrase-primary text-white text-xs hover:bg-phrase-primary/90"
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent mr-1"></div>
-                <span>Rephrasing...</span>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <span>Rephrase</span>
-                <ArrowRight className="ml-1 h-3 w-3" />
-              </div>
-            )}
-          </Button>
+          {enabled && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRephrase}
+              disabled={isLoading || !text.trim()}
+              className="bg-phrase-primary text-white text-xs hover:bg-phrase-primary/90"
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent mr-1"></div>
+                  <span>Rephrasing...</span>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <span>Rephrase</span>
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </div>
+              )}
+            </Button>
+          )}
         </div>
         
         <div className="space-y-1">
@@ -182,8 +184,29 @@ const IOSKeyboard: React.FC<IOSKeyboardProps> = ({ config }) => {
           {text || <span className="text-gray-400">Type something or press the keyboard icon...</span>}
         </div>
         
-        {!isOpen && (
-          <div className="flex justify-end mt-2">
+        <div className="flex justify-end mt-2 gap-2">
+          {enabled && text.trim() && !isOpen && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={handleRephrase}
+              disabled={isLoading}
+              className="bg-phrase-primary hover:bg-phrase-primary/90"
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent mr-1"></div>
+                  <span>Rephrasing...</span>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <MessageSquareText className="h-4 w-4 mr-1" />
+                  <span>Rephrase</span>
+                </div>
+              )}
+            </Button>
+          )}
+          {!isOpen && (
             <Button 
               variant="outline" 
               size="icon" 
@@ -192,8 +215,8 @@ const IOSKeyboard: React.FC<IOSKeyboardProps> = ({ config }) => {
             >
               <Keyboard className="h-4 w-4" />
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       {isOpen && renderKeyboard()}

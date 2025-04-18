@@ -1,11 +1,11 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { LLMConfig } from '@/models/ConfigModel';
 import { LLMServiceFactory } from '@/services/LLMService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { Copy, RotateCcw, Pencil, X, Check } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Copy, RotateCcw, Pencil, X, Check, MessageSquareText } from 'lucide-react';
 
 interface AndroidBubbleProps {
   config: LLMConfig;
@@ -81,6 +81,10 @@ const AndroidBubble: React.FC<AndroidBubbleProps> = ({ config }) => {
         });
       } else if (result.rephrased) {
         setRephrased(result.rephrased);
+        toast({
+          title: "Success",
+          description: "Text has been rephrased successfully.",
+        });
       } else {
         toast({
           title: "Error",
@@ -107,6 +111,12 @@ const AndroidBubble: React.FC<AndroidBubbleProps> = ({ config }) => {
           title: "Copied",
           description: "Rephrased text copied to clipboard",
         });
+        // Auto-collapse after copying for better UX
+        setTimeout(() => {
+          setExpanded(false);
+          setText('');
+          setRephrased('');
+        }, 1500);
       } else {
         toast({
           title: "Copy failed",
@@ -191,7 +201,7 @@ const AndroidBubble: React.FC<AndroidBubbleProps> = ({ config }) => {
       }}
     >
       {expanded ? (
-        <div className="mini-dialog w-80 sm:w-96">
+        <div className="mini-dialog w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-medium text-lg">Phrase Pilot</h3>
             <Button 
@@ -207,74 +217,73 @@ const AndroidBubble: React.FC<AndroidBubbleProps> = ({ config }) => {
           {!rephrased ? (
             <>
               <div className="space-y-3">
-                <Input
+                <Textarea
                   placeholder="Enter text to rephrase..."
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  className="w-full"
+                  className="w-full min-h-20"
                   disabled={isLoading}
                 />
                 <Button 
                   onClick={handleRephrase} 
-                  className="w-full bg-phrase-primary hover:bg-phrase-primary/90"
-                  disabled={isLoading}
+                  className="w-full bg-phrase-primary hover:bg-phrase-primary/90 flex items-center justify-center gap-2"
+                  disabled={isLoading || !text.trim()}
                 >
                   {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2"></div>
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
                       <span>Rephrasing...</span>
-                    </div>
+                    </>
                   ) : (
-                    "Rephrase"
+                    <>
+                      <MessageSquareText className="h-4 w-4" />
+                      <span>Rephrase Text</span>
+                    </>
                   )}
                 </Button>
               </div>
             </>
           ) : (
             <>
-              <div className="bg-muted rounded-md p-3 mb-3">
-                <p className="text-sm">{rephrased}</p>
+              <div className="bg-muted rounded-md p-3 mb-3 max-h-60 overflow-y-auto">
+                <p className="text-sm whitespace-pre-wrap">{rephrased}</p>
               </div>
               <div className="flex space-x-2">
                 <Button 
-                  variant="outline" 
-                  size="icon" 
+                  variant="default" 
                   onClick={handleCopy}
-                  className="flex-1"
+                  className="flex-1 bg-phrase-primary hover:bg-phrase-primary/90"
                 >
                   <Copy className="h-4 w-4 mr-2" />
-                  <span>Copy</span>
+                  <span>Copy & Close</span>
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="icon" 
                   onClick={handleRetry}
-                  className="flex-1"
+                  size="icon"
                 >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  <span>Retry</span>
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="icon" 
                   onClick={handleEdit}
-                  className="flex-1"
+                  size="icon"
                 >
-                  <Pencil className="h-4 w-4 mr-2" />
-                  <span>Edit</span>
+                  <Pencil className="h-4 w-4" />
                 </Button>
               </div>
             </>
           )}
         </div>
       ) : (
-        <div 
-          className="bubble cursor-move"
+        <div
+          className="bubble bg-phrase-primary text-white shadow-lg flex items-center justify-center cursor-pointer transition-transform hover:scale-110 active:scale-95"
+          style={{ width: '56px', height: '56px', borderRadius: '28px' }}
           onClick={handleBubbleClick}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          <span className="text-xl font-bold">P</span>
+          <MessageSquareText className="h-6 w-6" />
         </div>
       )}
     </div>

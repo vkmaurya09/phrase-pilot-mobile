@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Switch } from "@/components/ui/switch";
 import OnboardingScreen from './OnboardingScreen';
 import AndroidBubble from './AndroidBubble';
 import IOSKeyboard from './IOSKeyboard';
@@ -14,6 +14,7 @@ const PhrasePilot: React.FC = () => {
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
   const [config, setConfig] = useState<LLMConfig>({ ...defaultConfig });
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const { toast } = useToast();
   
   // Capacitor info message
@@ -81,6 +82,16 @@ const PhrasePilot: React.FC = () => {
       });
     }
   };
+
+  const toggleRephrasing = (value: boolean) => {
+    setIsEnabled(value);
+    toast({
+      title: value ? "Enabled" : "Disabled",
+      description: value 
+        ? "Phrase Pilot is now active and ready to rephrase" 
+        : "Phrase Pilot is now disabled",
+    });
+  };
   
   if (isLoading) {
     return (
@@ -102,16 +113,28 @@ const PhrasePilot: React.FC = () => {
       <header className="bg-phrase-primary text-white p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold">Phrase Pilot Mobile</h1>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => toast({
-              title: "Capacitor Integration Note",
-              description: capacitorMessage,
-            })}
-          >
-            <Info className="h-5 w-5 text-white" />
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Switch 
+                id="rephrase-mode" 
+                checked={isEnabled} 
+                onCheckedChange={toggleRephrasing} 
+              />
+              <label htmlFor="rephrase-mode" className="text-sm font-medium">
+                {isEnabled ? "Enabled" : "Disabled"}
+              </label>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => toast({
+                title: "Capacitor Integration Note",
+                description: capacitorMessage,
+              })}
+            >
+              <Info className="h-5 w-5 text-white" />
+            </Button>
+          </div>
         </div>
       </header>
       
@@ -153,7 +176,7 @@ const PhrasePilot: React.FC = () => {
                 </div>
               </div>
               
-              <AndroidBubble config={config} />
+              {isEnabled && <AndroidBubble config={config} />}
             </div>
           </TabsContent>
           
@@ -165,7 +188,7 @@ const PhrasePilot: React.FC = () => {
               </p>
             </div>
             <div className="flex justify-center">
-              <IOSKeyboard config={config} />
+              <IOSKeyboard config={config} enabled={isEnabled} />
             </div>
           </TabsContent>
           
